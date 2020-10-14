@@ -65,11 +65,55 @@ function getCookie(key) {
   });
   return objCookie[key];
 }
-
-
+const getLongToTime = during => {
+  var s = Math.floor(during / 1) % 60;
+  if (s < 10) {
+    s = '0' + s;
+  }
+  let i = Math.floor(during / 60);
+  if (i < 10) {
+    i = '0' + i;
+  }
+  during = Math.floor(during / 60);
+  // var h = during % 24;
+  during = Math.floor(during / 24);
+  // var d = during;
+  // return d + '天' + h + '时' + i + '分' + s + '秒';
+  return i + ':' + s;
+};
+const getLongToTime1 = during => {
+  var h = Math.floor(during / 3600);
+  during = during % 3600;
+  var m = Math.floor(during / 60);
+  if (h > 0) {
+    return h + '小时' + m + '分钟';
+  } else {
+    return m + '分钟';
+  }
+};
+const geFormatTime = during => {
+  var s = Math.floor(during / 1) % 60;
+  if (s < 10) {
+    s = '0' + s;
+  }
+  during = Math.floor(during / 60);
+  // var i = during % 60;
+  if (during < 10) {
+    during = '0' + during;
+  }
+  return during + ':' + s;
+};
 // 对外暴露方法和内容
-module.exports = {
+export const util = {
   timestampToTime: timestampToTime, // 时间戳转日期时间
   formatDay: formatDay, //时间戳转换日期格式（年月日）
-  getCookie: getCookie
+  getCookie: getCookie,
+  getLongToTime:getLongToTime,
+  getLongToTime1:getLongToTime1,
+  geFormatTime:geFormatTime
+};
+export default {
+  install(Vue) {
+      Vue.prototype.$util = util;
+  }
 };

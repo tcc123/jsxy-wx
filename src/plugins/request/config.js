@@ -91,7 +91,7 @@ function getApiToken() {
  * @return {string} token字符串
  */
 function getToken() {
-  return uni.getStorageSync('token');
+  return uni.getStorageSync('Token');
 }
 
 /**
@@ -100,7 +100,7 @@ function getToken() {
  * @return {void}
  */
 function saveToken(token) {
-  uni.setStorageSync('token', token);
+  uni.setStorageSync('Token', token);
 }
 
 /**
@@ -130,7 +130,7 @@ function saveCookie(cookie) {
  */
 function handleCode({ data, code, config }) {
   const STATUS = {
-    '0'() { // 请求成功
+    '200'() { // 请求成功
       return data;
     },
     '1000'() { // token过期，重新获取token

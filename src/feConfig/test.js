@@ -1,6 +1,6 @@
 module.exports = {
   api: {
-    base: 'http://yapi.iyunxiao.com/mock/451'
+    base: 'http://47.104.145.133:9100'
   },
   token: '',
   appid: '',

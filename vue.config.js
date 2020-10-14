@@ -9,9 +9,14 @@ module.exports = {
     port: 8080,
     open: true,
     proxy: {
-      '/demo': {
-        target: 'http://yapi.iyunxiao.com/mock/451',
-        changeOrigin: true
+      '/api': {
+        // target: 'https://confucius.jingshuxueyuan.com/',//正式环境
+        // target: 'http://47.104.145.133:9100', //测试环境
+        target: 'http://192.168.31.73:9100', //后端环境
+        changeOrigin: true,
+        pathRewrite:{
+          '^/api':''
+        }
       }
     },
     disableHostCheck: true
@@ -20,7 +25,6 @@ module.exports = {
     plugins: [
       new webpack.ProvidePlugin({
         feConfig: path.resolve('.', './src/feConfig/' + (configEnv || 'development')),
-        Util: path.resolve('.', './src/utils/util'),
         Enums:path.resolve('.', './src/contants/enums')
       })
     ]
