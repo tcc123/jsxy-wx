@@ -46,9 +46,9 @@ export default {
                 });
                 return;
             }
-            let url=item.courseType == 1?'/pages/course/index?courseId=':'/pages/course/album?courseId=';
+            let url=item.courseType == 1?'/pages/course/index?resourceType='+item.resourceModel.resourceType+'&courseSmallId='+item.courseId+'&courseType='+item.courseType+'&courseId='+item.parentCourseModel.courseId:'/pages/course/album?courseId='+item.courseId;
             uni.navigateTo({
-                url: url + item.courseId
+                url: url
             });
         }
     }

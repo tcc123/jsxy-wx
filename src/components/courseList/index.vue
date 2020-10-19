@@ -1,25 +1,25 @@
 <template>
     <view>
         <view :class="{'catalogue':true}" v-for="(item,index) in resourceList" :key="index" >
-            <view>
-                <view class="courseBigName">{{ item.courseName }}</view>
-                <view style="display:flex;font-size:20rpx;color:#727272;line-height:100%;">
-                    <view style="padding-right:11rpx;border-right:1rpx solid #727272;">{{ $util.geFormatTime(item.resourceModel.resourceDuration) }}</view>
-                    <view style="padding-left:11rpx;">{{ item.coursePlayNum+'人学过' }}</view>
+                <view>
+                    <view class="courseBigName">{{ item.courseName }}</view>
+                    <view style="display:flex;font-size:20rpx;color:#727272;line-height:100%;">
+                        <view style="padding-right:11rpx;border-right:1rpx solid #727272;">{{ $util.geFormatTime(item.resourceModel.resourceDuration) }}</view>
+                        <view style="padding-left:11rpx;">{{ item.coursePlayNum+'人学过' }}</view>
+                    </view>
                 </view>
-            </view>
-            <view v-if="item.isLock==0">
-                <view v-if="item.courseTry==1">
-                    <view :class="playIndex==index?'playing':'lock'" @click="_toCourse(item,index)">{{ playIndex===index?'正在播放':'试听' }} </view>
+                <view v-if="item.isLock==0">
+                    <view v-if="item.courseTry==1">
+                        <view :class="playIndex==index?'playing':'lock'" @click="_toCourse(item,index)">{{ playIndex===index?'正在播放':'试听' }} </view>
+                    </view>
+                    <view v-else>
+                        <view :class="playIndex==index?'playing':'lock'" v-if="normalPrice==0&&vipFree==0" @click="_toCourse(item,index)">{{ playIndex===index?'正在播放':'播放' }}</view>
+                        <image v-else src="/static/images/lock.png" style="width: 34rpx;height: 34rpx;" @click="_toCourse(item,index)"></image>
+                    </view>
                 </view>
                 <view v-else>
-                    <view :class="playIndex==index?'playing':'lock'" v-if="normalPrice==0&&vipFree==0" @click="_toCourse(item,index)">{{ playIndex===index?'正在播放':'播放' }}</view>
-                    <image v-else src="/static/images/lock.png" style="width: 34rpx;height: 34rpx;"></image>
+                    <view :class="playIndex==index?'playing':'lock'" @click="_toCourse(item,index)">{{ playIndex===index?'正在播放':'播放' }}</view>
                 </view>
-            </view>
-            <view v-else>
-                <view :class="playIndex==index?'playing':'lock'" @click="_toCourse(item,index)">{{ playIndex===index?'正在播放':'播放' }}</view>
-            </view>
         </view>
     </view>
 </template>

@@ -8,7 +8,10 @@
 				<view>
 					<view class="courseName">{{ courseInfo.courseName }}</view>
 					<view class="courseTitle">{{ courseInfo.courseTitle }}</view>
-                    <text class="collect" :style="{backgroundImage:`url(${courseInfo.isCollection?'/static/images/collect.png':'/static/images/uncollect.png'})`}" @click="collection">{{ courseInfo.isCollection ?'已收藏':'收藏' }}</text>
+                    <view class="collectStatus">
+                        <image class="star" mode="aspectFill" :src="courseInfo.isCollection?'/static/images/collect.png':'/static/images/uncollect.png'"></image>
+                        <text class="collect" @click="collection">{{ courseInfo.isCollection ?'已收藏':'收藏' }}</text>
+                    </view>
                     <view>
                         <view class="periodsTotal" v-if="courseInfo.periodsTotal>0">{{ '已更新'+courseInfo.courseNum+'期/共'+courseInfo.periodsTotal+'期' }}</view>
                         <view class="periodsTotal" v-else >{{ '已更新'+courseInfo.courseNum+'期' }}</view>
@@ -179,7 +182,7 @@ export default {
         clickCourse(item,index){
             this.playIndex=index,
             uni.navigateTo({
-                url: "/pages/course/index?courseId=" + this.courseId+'&coueseIndex='+index+'&courseType='+item.resourceModel.resourceType+'&normalPrice='+this.courseInfo.normalPrice+'&vipFree='+this.courseInfo.vipFree
+                url: "/pages/course/index?courseId=" + this.courseId+'&courseIndex='+index+'&resourceType='+item.resourceModel.resourceType+'&normalPrice='+this.courseInfo.normalPrice+'&vipFree='+this.courseInfo.vipFree
             });
         }
     }
@@ -216,18 +219,25 @@ export default {
         line-height: 100%;
         margin: 15rpx 0 30rpx;
     }
+    .collectStatus{
+        position: relative;
+        margin-left: 22rpx;
+    }
     .collect{
         background: #FFFFFF;
         border-radius: 20rpx;
         padding: 9rpx 15rpx 9rpx 49rpx;
-        margin-left: 22rpx;;
         font-size: 22rpx;
         line-height: 100%;
         color: #E8A850;
         display: inline-block;
-        background-size: 30rpx 28rpx;
-        background-repeat:no-repeat;
-        background-position:16rpx 5rpx;
+    }
+    .star{
+        width: 30rpx;
+        height: 28rpx;
+        position: absolute;
+        left: 12rpx;
+        top:8rpx
     }
 }
 .bottom{

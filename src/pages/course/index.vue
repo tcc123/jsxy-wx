@@ -1,7 +1,7 @@
 <template>
     <view class="content">
       <view>
-          <view class="top" v-if="courseType==0">
+          <view class="top" v-if="resourceType==0">
             <view class="top_title">{{ courseSmall.courseName }}</view>
             <view class="top_desc">{{ courseSmall.courseTitle }}</view>
             <view class="center">
@@ -20,12 +20,12 @@
                 <image class="center_play" :src="isPlaying?pauseIcon:playIcon" @click="onPlayUrl"></image>
                 <image class="progress_change2" src="/static/images/play_right.png" @click="onPlayNext"></image>
             </view>
-            <view class="listIcon" @click="show = true">
+            <view class="listIcon" @click="openPopup">
               <image src="/static/images/resourceList.png" style="width:31rpx;height:30rpx;margin: 0 auto;"></image>
               <text>播放列表</text>
             </view>
           </view>
-          <view v-else style="width:100%">
+          <view v-else style="width:100%;position: relative;">
               <view class="video">
                 <video id="myVideo" ref="myVideo" 
                     :src="courseSmall.resourceModel.resourcePath"
@@ -37,17 +37,28 @@
                 </video>
               </view>
               <view class="top_title" style="padding: 30rpx 44rpx 0">{{ courseSmall.courseName }}</view>
-              <view class="listIcon" @click="show = true">
+              <view class="listIcon" @click="openPopup">
                 <image src="/static/images/resourceList.png" style="width:31rpx;height:30rpx;margin: 0 auto;"></image>
                 <text>播放列表</text>
               </view>
           </view>
       </view>
-      <uPopup v-model="show" mode="bottom" border-radius="30" height="620rpx" width="100%">
-        <view style="padding:32rpx 44rpx 0">
-          <course-list :play-index="playIndex" :normal-price="normalPrice" :vip-free="vipFree" :resource-list="resourceList" @clickCourse="clickCourse"></course-list>
+      <uni-popup ref="popup" type="bottom">
+            <scroll-view class="popup" scroll-y>
+              <view class="courseList">
+                <course-list :play-index="playIndex" :normal-price="normalPrice" :vip-free="vipFree" :resource-list="resourceList" @clickCourse="clickCourse"></course-list>
+              </view>
+            </scroll-view>
+      </uni-popup>
+      <uni-popup ref="buyPopup" type="bottom">
+        <view class="buyPopup" v-if="vipFree">
+          <button class="notVip">购买本课{{ normalPrice }}元</button>
+          <button class="isVip">加入会员享{{ vipFree }}元购买</button>
         </view>
-      </uPopup>
+        <view class="buyPopup" v-else>
+          <button class="notVip">购买本课{{ normalPrice }}元</button>
+        </view>
+      </uni-popup>
         <!-- <view class="vip" bindtap="toDownload">
             <image class="vip_bg" src="/static/images/bg_play_vip.png"></image>
             <view class="vip_info"> -->
@@ -66,20 +77,18 @@
           </scroll-view>
       </view>
       <view v-else>
-        <u-empty text="数据为空" mode="data"></u-empty>
+        暂无数据
       </view>
     </view>
 </template>
 
 <script>
-import uPopup from 'uview-ui/components/u-popup/u-popup.vue';
-import uEmpty from 'uview-ui/components/u-empty/u-empty.vue';
+import {uniPopup} from '@dcloudio/uni-ui';
 import courseList from '../../components/courseList/index';
 const innerAudioContext = uni.createInnerAudioContext();
 export default {
     components:{
-      uPopup,
-      uEmpty,
+      uniPopup,
       courseList
     },
     data(){
@@ -87,8 +96,9 @@ export default {
             courseSmall: {},
             courseInfo:'',
             courseId:'',
-            coueseSmallId:'',
             courseType:'',
+            courseSmallId:'',
+            resourceType:'',
             resourceList:[],
             pageTotal:0,
             query: {
@@ -112,17 +122,26 @@ export default {
     },
     onLoad: function(options){
         this.courseId=options.courseId;
-        this.coueseIndex=Number(options.coueseIndex);
+        this.courseIndex=Number(options.courseIndex);
+        this.resourceType=options.resourceType;
+        this.courseSmallId=options.courseSmallId;
         this.courseType=options.courseType;
-        this.normalPrice=options.normalPrice;
-        this.vipFree=options.vipFree;
+        if(options.courseSmallId){
+          this.getCourseInfo(options.courseId);
+        }else{
+          this.vipFree=options.vipFree;
+          this.normalPrice=options.normalPrice;
+        }
         this.getResourceList();
     },
     onUnload(){
         this.isPlaying=false;
-        innerAudioContext.pause();
+        innerAudioContext.stop();
     },
     methods:{
+        openPopup(){
+          this.$refs.popup.open();
+        },
         onChange(e){
             var id = e.currentTarget.dataset.id;
             if(id == 0){
@@ -131,8 +150,20 @@ export default {
               this.hiddle=true;
             }
         },
+        getCourseInfo(courseId) {
+            let url='api/apiCourse/courseInfoSelf?courseId=' + courseId;
+            this.$http.request({
+              url,
+              method: 'post',
+            }).then(res=>{
+              if(res.code==200){
+                  this.vipFree=res.results.vipFree;
+                  this.normalPrice=res.results.normalPrice;
+              }
+            });
+        },
         getResourceList() {
-            let url='api/apiCourse/course?parentId='+ this.courseId +'&resourceType=' + this.courseType+'&isPage=0';
+            let url='api/apiCourse/course?parentId='+ this.courseId +'&resourceType=' + this.resourceType+'&isPage=0';
             this.$http.request({
                 url,
                 method: 'post',
@@ -140,8 +171,12 @@ export default {
             }).then(res=>{
               if(res.code==200){
                   this.resourceList=res.results;
-                  this.resetRecourse(res.results[this.coueseIndex],this.coueseIndex);
-                  if(this.courseType==0){
+                  if(this.courseType==1){
+                    let courseIndex = res.results.findIndex(item =>{return item.courseId===this.courseSmallId;});
+                    this.courseIndex=courseIndex;
+                  }
+                  this.resetRecourse(res.results[this.courseIndex],this.courseIndex);
+                  if(this.resourceType==0){
                     this.onPlayUrl();
                   }
 
@@ -195,6 +230,20 @@ export default {
           });
         },
         onPlayUrl() {
+          if(this.courseSmall.isLock==0){
+            if(this.courseSmall.courseTry==1||this.normalPrice==0&&this.vipFree==0){
+              if(innerAudioContext.paused){
+                  this.isPlaying=true;
+                  innerAudioContext.play();
+              }else{
+                  this.isPlaying=false;
+                  innerAudioContext.pause();
+              }
+              this.changeAudioStatus();
+            }else{
+              this.$refs.buyPopup.open();
+            }
+          }else{
             if(innerAudioContext.paused){
                 this.isPlaying=true;
                 innerAudioContext.play();
@@ -203,6 +252,7 @@ export default {
                 innerAudioContext.pause();
             }
             this.changeAudioStatus();
+          }
         },
         seekPlay(time){
           innerAudioContext.play();
@@ -221,7 +271,7 @@ export default {
           uni.$emit('changeCourse',index);
           this.playIndex=index;
           this.courseSmall=item;
-          if(this.courseType==0){
+          if(this.resourceType==0){
             this.currentTime=0;
             innerAudioContext.src = this.courseSmall.resourceModel.resourcePath;
             this.courseInfo=this.courseSmall.courseInfo.replace(/<img/gi, '<img style="max-width:100%;height:auto;display:block;"');
@@ -229,6 +279,7 @@ export default {
           }
         },
         clickCourse(item,index){
+          this.$refs.popup.close();
           this.resetRecourse(item,index);
           this.onPlayUrl();
           this.show=false;
@@ -265,9 +316,9 @@ export default {
 }
 
 .center{
-  width: 400rpx;
-  height: 228rpx;
-  padding:16rpx 0 25rpx;
+  width: 354rpx;
+  height: 264rpx;
+  margin:16rpx 0 25rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -275,8 +326,8 @@ export default {
 }
 
 .center_bg{
-  width: 360rpx;
-  height: 260rpx;
+  width: 354rpx;
+  height: 264rpx;
 }
 
 .intro{
@@ -356,6 +407,35 @@ export default {
     width:100%;
     margin: 0 auto;
     position: relative;
+}
+.popup,.buyPopup{
+  background:#fff;
+  border-radius:30rpx 30rpx 0 0;
+}
+.popup{
+  height:620rpx;
+}
+.buyPopup{
+  height: 389rpx;
+  padding:73rpx 0 70rpx
+}
+.courseList{
+  padding:32rpx 44rpx 0;
+}
+.notVip,.isVip{
+  width: 440rpx;
+  height: 70rpx;
+  line-height: 70rpx;
+  border-radius: 35rpx;
+  font-size: 32rpx;
+  color: #fff;
+}
+.notVip{
+  background: linear-gradient(-11deg, #F3CF95, #F1C868);
+  margin-bottom: 35rpx ;
+}
+.isVip{
+  background: linear-gradient(-11deg, #E5B15E, #EC9A38);
 }
 
 .vip{

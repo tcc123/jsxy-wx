@@ -42,6 +42,7 @@
     "@dcloudio/uni-mp-toutiao": "2.0.0-24220191115006",
     "@dcloudio/uni-mp-weixin": "2.0.0-24220191115006",
     "@dcloudio/uni-stat": "2.0.0-24220191115006",
+    "@dcloudio/uni-ui": "^1.2.5",
     "flyio": "^0.6.2",
     "regenerator-runtime": "^0.12.1",
     "uview-ui": "^1.7.3",
